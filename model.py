@@ -69,7 +69,7 @@ class C3D(nn.Module):
         probs = self.softmax(logits)
         # probs = self.sigmoid(logits)
 
-        return probs
+        return logits
 
 """
 References

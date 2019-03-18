@@ -12,6 +12,7 @@ import numpy as np
 from torch.autograd import Variable
 from torchvision import transforms
 from sklearn.metrics import accuracy_score
+from scipy import stats
 
 from model import C3D
 from dataset import VideoFolder
@@ -33,6 +34,8 @@ def init_weights(m):
 
 
 def accuracy(output, target):
+    print(output.size())
+    print(target.size())
     y_pred = output.view(1, -1).squeeze(0)
     y_true = target.view(1, -1).squeeze(0)
     return accuracy_score(y_true.numpy(), np.around(y_pred.numpy()))
@@ -80,11 +83,13 @@ def train(args, data_loader, model, criterion, optimizer, epoch):
         input_var = input.cuda()
         target_var = target.cuda()
         target_var = torch.unsqueeze(target_var, 1).long()
-        print(input_var.size())
-        print(target_var.size())
 
         # compute output
         output = model(input_var)
+        print(input_var.size())
+        print(output.size())
+        print(target_var.size())
+
         loss = criterion(output, target_var)
 
         # compute gradient and do SGD step
@@ -126,6 +131,9 @@ def validate(args, val_loader, model, criterion):
     for k in range(10):
         for i, (input, target) in enumerate(val_loader):
 
+            # input_var = torch.autograd.Variable(input, volatile=True).cuda()
+            # target_var = torch.autograd.Variable(target, volatile=True).cuda()
+            # target_var = torch.unsqueeze(target_var, 1).float()
             input_var = torch.autograd.Variable(input, volatile=True).cuda()
             target_var = torch.autograd.Variable(target, volatile=True).cuda()
             target_var = torch.unsqueeze(target_var, 1).long()
@@ -187,6 +195,7 @@ if __name__ == '__main__':
     parser.add_argument('--video_clip_step', type=int, default=20)
     parser.add_argument('--checkpoint_dir', type=str, default='checkpoints')
     parser.add_argument('--name', type=str, default='exp')
+    parser.add_argument('--num_classes', type=int, default=9)
 
     args = parser.parse_args()
     print_options(parser, args)
@@ -210,7 +219,7 @@ if __name__ == '__main__':
         batch_size=1, num_workers=args.num_workers,
         shuffle=False, pin_memory=True, drop_last=False)
 
-    net = C3D().cuda()
+    net = C3D(num_classes=args.num_classes).cuda()
     optimizer = optim.Adam(net.parameters(), lr=0.001, betas=(0.9, 0.999))
     criterion = nn.CrossEntropyLoss()
 
