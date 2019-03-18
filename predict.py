@@ -79,7 +79,9 @@ def train(args, data_loader, model, criterion, optimizer, epoch):
         # target_var = torch.unsqueeze(target_var, 1).float()
         input_var = input.cuda()
         target_var = target.cuda()
-        target_var = torch.unsqueeze(target_var, 1).float()
+        target_var = torch.unsqueeze(target_var, 1).long()
+        print(input_var.size())
+        print(target_var.size())
 
         # compute output
         output = model(input_var)
