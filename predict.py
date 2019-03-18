@@ -34,11 +34,15 @@ def init_weights(m):
 
 
 def accuracy(output, target):
+    print('--- acc ---')
     print(output.size())
     print(target.size())
-    y_pred = output.view(1, -1).squeeze(0)
-    y_true = target.view(1, -1).squeeze(0)
-    return accuracy_score(y_true.numpy(), np.around(y_pred.numpy()))
+    y_pred = output.numpy().argmax(axis=1)
+    y_true = target.numpy()
+
+    #y_pred = output.view(1, -1).squeeze(0)
+    #y_true = target.view(1, -1).squeeze(0)
+    return accuracy_score(y_true, np.around(y_pred))
 
 
 class AverageMeter(object):
@@ -81,8 +85,8 @@ def train(args, data_loader, model, criterion, optimizer, epoch):
         # target_var = torch.autograd.Variable(target).cuda()
         # target_var = torch.unsqueeze(target_var, 1).float()
         input_var = input.cuda()
-        target_var = target.cuda()
-        target_var = torch.unsqueeze(target_var, 1).long()
+        target_var = target.long().cuda()
+        # target_var = torch.unsqueeze(target_var, 1).long()
 
         # compute output
         output = model(input_var)
@@ -97,9 +101,9 @@ def train(args, data_loader, model, criterion, optimizer, epoch):
         loss.backward()
         optimizer.step()
 
-        output = output.float()
-        loss = loss.float()
-        losses.update(loss.data[0], input.size(0))
+        # output = output.float()
+        # loss = loss.float()
+        losses.update(loss.item(), input.size(0))
         prec.update(accuracy(output.data.cpu(), target), input.size(0))
 
         # measure elapsed time
@@ -135,18 +139,18 @@ def validate(args, val_loader, model, criterion):
             # target_var = torch.autograd.Variable(target, volatile=True).cuda()
             # target_var = torch.unsqueeze(target_var, 1).float()
             input_var = torch.autograd.Variable(input, volatile=True).cuda()
-            target_var = torch.autograd.Variable(target, volatile=True).cuda()
-            target_var = torch.unsqueeze(target_var, 1).long()
+            target_var = torch.autograd.Variable(target, volatile=True).long().cuda()
+            # target_var = torch.unsqueeze(target_var, 1).long()
 
             # compute output
             output = model(input_var)
             loss = criterion(output, target_var)
 
-            output = output.float()
-            loss = loss.float()
+            # output = output.float()
+            # loss = loss.float()
 
             # measure accuracy and record loss
-            losses.update(loss.data[0], input.size(0))
+            losses.update(loss.item(), input.size(0))
             prec.update(accuracy(output.data.cpu(), target), input.size(0))
 
             # measure elapsed time
