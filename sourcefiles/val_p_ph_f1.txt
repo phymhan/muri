@@ -1,0 +1,10 @@
+Dyad4Drive1/frame1_passenger.avi 7
+Dyad4Drive2/frame1_passenger.avi 7
+Dyad5Drive1/frame1_passenger.avi 6
+Dyad5Drive2/frame1_passenger.avi 6
+Dyad6Drive2/frame1_passenger.avi 6
+Dyad7Drive2/frame1_passenger.avi 6
+Dyad8Drive1/frame1_passenger.avi 7
+Dyad8Drive2/frame1_passenger.avi 8
+Dyad9Drive1/frame1_passenger.avi 7
+Dyad9Drive2/frame1_passenger.avi 8

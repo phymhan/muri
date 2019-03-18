@@ -1,0 +1,10 @@
+Dyad4Drive1/frame1_driver.avi 5
+Dyad4Drive2/frame1_driver.avi 8
+Dyad5Drive1/frame1_driver.avi 5
+Dyad5Drive2/frame1_driver.avi 4
+Dyad6Drive2/frame1_driver.avi 3
+Dyad7Drive2/frame1_driver.avi 5
+Dyad8Drive1/frame1_driver.avi 3
+Dyad8Drive2/frame1_driver.avi 5
+Dyad9Drive1/frame1_driver.avi 6
+Dyad9Drive2/frame1_driver.avi 1

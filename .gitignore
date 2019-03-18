@@ -1,3 +1,10 @@
 .idea
 *.pyc
 video*
+.DS_Store
+debug*
+datasets/
+checkpoints*/
+samples*/
+pretrained_models/
+results*/

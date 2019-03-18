@@ -6,7 +6,7 @@ class C3D(nn.Module):
     The C3D network as described in [1].
     """
 
-    def __init__(self):
+    def __init__(self, num_classes=2):
         super(C3D, self).__init__()
 
         self.conv1 = nn.Conv3d(3, 64, kernel_size=(3, 3, 3), padding=(1, 1, 1))
@@ -30,13 +30,14 @@ class C3D(nn.Module):
         self.fc6 = nn.Linear(8192, 4096)
         self.fc7 = nn.Linear(4096, 4096)
         # self.fc8 = nn.Linear(4096, 487)
-        self.fc8 = nn.Linear(4096, 1)
+        # self.fc8 = nn.Linear(4096, 1)
+        self.fc8 = nn.Linear(4096, int(num_classes))
 
         self.dropout = nn.Dropout(p=0.5)
 
         self.relu = nn.ReLU()
-        # self.softmax = nn.Softmax()
-        self.sigmoid = nn.Sigmoid()
+        self.softmax = nn.Softmax()
+        # self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
 
@@ -65,8 +66,8 @@ class C3D(nn.Module):
         h = self.dropout(h)
 
         logits = self.fc8(h)
-        # probs = self.softmax(logits)
-        probs = self.sigmoid(logits)
+        probs = self.softmax(logits)
+        # probs = self.sigmoid(logits)
 
         return probs
 
