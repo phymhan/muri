@@ -45,7 +45,7 @@ class VideoFolder(data.Dataset):
 
     def __getitem__(self, index):
         video_path, video_label = self.videos[index]
-        print(video_path)
+        # print(video_path)
         images = sample_video_clip(video_path, self.clip_step, self.clip_length)
         video = []
         if self.transform is not None:
@@ -53,4 +53,5 @@ class VideoFolder(data.Dataset):
                 video.append(self.transform(image))
 
         video = torch.stack(video).transpose(0, 1)
+        # print('done.')
         return video, video_label

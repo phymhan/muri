@@ -1,6 +1,6 @@
 ## round 1
 delta = 0.125
-mode = '_val'
+mode = '_train'
 mode_ = mode[1:]+'_'
 csvfile = 'sourcefiles/NewList%s.txt' % mode
 with open(csvfile, 'r') as f:

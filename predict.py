@@ -16,6 +16,8 @@ from scipy import stats
 
 from model import C3D
 from dataset import VideoFolder
+from PIL import Image
+import cv2
 
 
 def init_weights(m):
@@ -34,9 +36,9 @@ def init_weights(m):
 
 
 def accuracy(output, target):
-    print('--- acc ---')
-    print(output.size())
-    print(target.size())
+    # print('--- acc ---')
+    # print(output.size())
+    # print(target.size())
     y_pred = output.numpy().argmax(axis=1)
     y_true = target.numpy()
 
@@ -90,9 +92,9 @@ def train(args, data_loader, model, criterion, optimizer, epoch):
 
         # compute output
         output = model(input_var)
-        print(input_var.size())
-        print(output.size())
-        print(target_var.size())
+        # print(input_var.size())
+        # print(output.size())
+        # print(target_var.size())
 
         loss = criterion(output, target_var)
 
@@ -132,7 +134,7 @@ def validate(args, val_loader, model, criterion):
     model.eval()
 
     end = time.time()
-    for k in range(10):
+    for k in range(1):
         for i, (input, target) in enumerate(val_loader):
 
             # input_var = torch.autograd.Variable(input, volatile=True).cuda()
@@ -185,6 +187,24 @@ def print_options(parser, opt):
         opt_file.write('\n')
 
 
+def __get_bbox(img, args):
+
+    img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+
+
+def get_transform(opt):
+    transform_list = [transforms.ToPILImage()]
+    transform_list.append(transforms.Lambda(
+        lambda x: __get_bbox(x, args)
+    ))
+    transform_list += [
+        transforms.Scale(args.video_frame_size),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor()]
+
+    return transforms.Compose(transform_list)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=1)
@@ -200,6 +220,7 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint_dir', type=str, default='checkpoints')
     parser.add_argument('--name', type=str, default='exp')
     parser.add_argument('--num_classes', type=int, default=9)
+    parser.add_argument('--loadSize', type=int, default=600)
 
     args = parser.parse_args()
     print_options(parser, args)
@@ -207,9 +228,11 @@ if __name__ == '__main__':
     train_loader = torch.utils.data.DataLoader(
         VideoFolder(args.dataroot, args.datafile, transform=transforms.Compose([
             transforms.ToPILImage(),
-            transforms.CenterCrop((270, 270)),
-            transforms.Scale(args.video_frame_size),
-            transforms.RandomHorizontalFlip(),
+            # transforms.CenterCrop((270, 270)),
+            # transforms.CenterCrop((args.loadSize, args.loadSize)),
+            # transforms.Scale(args.video_frame_size),
+            transforms.Resize([args.loadSize, args.loadSize], Image.BICUBIC),
+            # transforms.RandomHorizontalFlip(),
             transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
         batch_size=args.batch_size, num_workers=args.num_workers,
         shuffle=True, pin_memory=True, drop_last=True)
@@ -217,8 +240,10 @@ if __name__ == '__main__':
     val_loader = torch.utils.data.DataLoader(
         VideoFolder(args.dataroot, args.datafile_val, transform=transforms.Compose([
             transforms.ToPILImage(),
-            transforms.CenterCrop((270, 270)),
-            transforms.Scale(args.video_frame_size),
+            # transforms.CenterCrop((270, 270)),
+            # transforms.CenterCrop((args.loadSize, args.loadSize)),
+            # transforms.Scale(args.video_frame_size),
+            transforms.Resize([args.loadSize, args.loadSize], Image.BICUBIC),
             transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
         batch_size=1, num_workers=args.num_workers,
         shuffle=False, pin_memory=True, drop_last=False)
