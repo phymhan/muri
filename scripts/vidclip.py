@@ -14,7 +14,7 @@ FMT = '%H:%M:%S'
 
 def time2sec(s):
     s_ = s.split(':')
-    return int(s_[0])*3600 + int(s_[1])*60 + int(s_[2])
+    return float(s_[0])*3600 + float(s_[1])*60 + float(s_[2])
 
 
 if not os.path.exists(outdir):
@@ -73,14 +73,14 @@ for line in thelist[1:]:
     # driver
     filepath_in = os.path.join(rootdir, folder0, 'Vehicle', folder1, vidfile_driver)
     meta = skvideo.io.ffprobe(filepath_in)
-    if meta['video']['@duration'] >= time2sec(frame1_stop):
+    if float(meta['video']['@duration']) >= time2sec(frame1_stop):
         # driver frame 1
         filepath_out = os.path.join(outdir_did, 'frame1_driver.mp4')
         os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame1_start, duration1, filepath_in, filepath_out))
     else:
         badlines.append('%s, frame1 exceeds duration of driver video')
         fine1 = False
-    if meta['video']['@duration'] >= time2sec(frame2_stop):
+    if float(meta['video']['@duration']) >= time2sec(frame2_stop):
         # driver frame 2
         filepath_out = os.path.join(outdir_did, 'frame2_driver.mp4')
         os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame2_start, duration2, filepath_in, filepath_out))
@@ -91,14 +91,14 @@ for line in thelist[1:]:
     # passenger
     filepath_in = os.path.join(rootdir, folder0, 'Vehicle', folder1, vidfile_passenger)
     meta = skvideo.io.ffprobe(filepath_in)
-    if meta['video']['@duration'] >= time2sec(frame1_stop):
+    if float(meta['video']['@duration']) >= time2sec(frame1_stop):
         # passenger frame 1
         filepath_out = os.path.join(outdir_did, 'frame1_passenger.mp4')
         os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame1_start, duration1, filepath_in, filepath_out))
     else:
         badlines.append('%s, frame1 exceeds duration of passenger video')
         fine1 = False
-    if meta['video']['@duration'] >= time2sec(frame2_stop):
+    if float(meta['video']['@duration']) >= time2sec(frame2_stop):
         # passenger frame 2
         filepath_out = os.path.join(outdir_did, 'frame2_passenger.mp4')
         os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame2_start, duration2, filepath_in, filepath_out))
