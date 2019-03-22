@@ -1,0 +1,17 @@
+Dyad12Drive1, frame1 exceeds duration of driver video
+Dyad12Drive1, frame2 exceeds duration of driver video
+Dyad12Drive2, frame1 exceeds duration of driver video
+Dyad12Drive2, frame2 exceeds duration of driver video
+Dyad13Drive2, frame1 exceeds duration of passenger video
+Dyad13Drive2, frame2 exceeds duration of passenger video
+Dyad15Drive2, frame2 exceeds duration of passenger video
+Dyad16Drive1, frame1 exceeds duration of driver video
+Dyad16Drive1, frame2 exceeds duration of driver video
+Dyad18Drive2, frame1 exceeds duration of passenger video
+Dyad18Drive2, frame2 exceeds duration of passenger video
+Dyad19Drive1, no meta info for driver video
+Dyad21Drive2, no meta info for passenger video
+Dyad22Drive1, frame1 exceeds duration of passenger video
+Dyad22Drive1, frame2 exceeds duration of passenger video
+Dyad8Drive1, frame1 exceeds duration of passenger video
+Dyad8Drive1, frame2 exceeds duration of passenger video
