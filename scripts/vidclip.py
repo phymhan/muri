@@ -89,6 +89,8 @@ for line in thelist[1:]:
             badlines.append('%s, frame2 exceeds duration of driver video' % did)
             fine2 = False
     else:
+        fine1 = False
+        fine2 = False
         badlines.append('%s, no meta info for driver video' % did)
 
     # passenger
@@ -110,6 +112,8 @@ for line in thelist[1:]:
             badlines.append('%s, frame2 exceeds duration of passenger video' % did)
             fine2 = False
     else:
+        fine1 = False
+        fine2 = False
         badlines.append('%s, no meta info for passenger video' % did)
 
     if fine1:
