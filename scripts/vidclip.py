@@ -73,38 +73,44 @@ for line in thelist[1:]:
     # driver
     filepath_in = os.path.join(rootdir, folder0, 'Vehicle', folder1, vidfile_driver)
     meta = skvideo.io.ffprobe(filepath_in)
-    if float(meta['video']['@duration']) >= time2sec(frame1_stop):
-        # driver frame 1
-        filepath_out = os.path.join(outdir_did, 'frame1_driver.mp4')
-        os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame1_start, duration1, filepath_in, filepath_out))
+    if 'video' in meta:
+        if float(meta['video']['@duration']) >= time2sec(frame1_stop):
+            # driver frame 1
+            filepath_out = os.path.join(outdir_did, 'frame1_driver.mp4')
+            os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame1_start, duration1, filepath_in, filepath_out))
+        else:
+            badlines.append('%s, frame1 exceeds duration of driver video' % did)
+            fine1 = False
+        if float(meta['video']['@duration']) >= time2sec(frame2_stop):
+            # driver frame 2
+            filepath_out = os.path.join(outdir_did, 'frame2_driver.mp4')
+            os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame2_start, duration2, filepath_in, filepath_out))
+        else:
+            badlines.append('%s, frame2 exceeds duration of driver video' % did)
+            fine2 = False
     else:
-        badlines.append('%s, frame1 exceeds duration of driver video')
-        fine1 = False
-    if float(meta['video']['@duration']) >= time2sec(frame2_stop):
-        # driver frame 2
-        filepath_out = os.path.join(outdir_did, 'frame2_driver.mp4')
-        os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame2_start, duration2, filepath_in, filepath_out))
-    else:
-        badlines.append('%s, frame2 exceeds duration of driver video')
-        fine2 = False
+        badlines.append('%s, no meta info for driver video' % did)
 
     # passenger
     filepath_in = os.path.join(rootdir, folder0, 'Vehicle', folder1, vidfile_passenger)
     meta = skvideo.io.ffprobe(filepath_in)
-    if float(meta['video']['@duration']) >= time2sec(frame1_stop):
-        # passenger frame 1
-        filepath_out = os.path.join(outdir_did, 'frame1_passenger.mp4')
-        os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame1_start, duration1, filepath_in, filepath_out))
+    if 'video' in meta:
+        if float(meta['video']['@duration']) >= time2sec(frame1_stop):
+            # passenger frame 1
+            filepath_out = os.path.join(outdir_did, 'frame1_passenger.mp4')
+            os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame1_start, duration1, filepath_in, filepath_out))
+        else:
+            badlines.append('%s, frame1 exceeds duration of passenger video' % did)
+            fine1 = False
+        if float(meta['video']['@duration']) >= time2sec(frame2_stop):
+            # passenger frame 2
+            filepath_out = os.path.join(outdir_did, 'frame2_passenger.mp4')
+            os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame2_start, duration2, filepath_in, filepath_out))
+        else:
+            badlines.append('%s, frame2 exceeds duration of passenger video' % did)
+            fine2 = False
     else:
-        badlines.append('%s, frame1 exceeds duration of passenger video')
-        fine1 = False
-    if float(meta['video']['@duration']) >= time2sec(frame2_stop):
-        # passenger frame 2
-        filepath_out = os.path.join(outdir_did, 'frame2_passenger.mp4')
-        os.system('ffmpeg -ss %s -t %s -i "%s" -c copy "%s"' % (frame2_start, duration2, filepath_in, filepath_out))
-    else:
-        badlines.append('%s, frame2 exceeds duration of passenger video')
-        fine2 = False
+        badlines.append('%s, no meta info for passenger video' % did)
 
     if fine1:
         newlines1.append('%s, %s, %s, %s, %s' % (did, line_[5], line_[6], line_[7], line_[8].strip('\n')))
