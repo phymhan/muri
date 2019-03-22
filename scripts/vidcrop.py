@@ -28,5 +28,9 @@ for did in dids:
         file_in = os.path.join(src, did, filename)
         file_out = os.path.join(dst, did, filename)
         x, y = read_xy(os.path.join(src, did, filename+'.txt'))
-        print('ffmpeg -i %s -filter:v "crop=%d:%d:%d:%d" %s' % (file_in, W, W, x, y, file_out))
+        out_w = W
+        out_h = W
+        x = x - out_w/2
+        y = y - out_h/2
+        os.system('ffmpeg -i %s -filter:v "crop=%d:%d:%d:%d" -c:a copy %s' % (file_in, out_w, out_h, x, y, file_out))
     print('-> did: %s' % did)
