@@ -59,7 +59,7 @@ class C3D(nn.Module):
         h = self.relu(self.conv5b(h))
         h = self.pool5(h)
 
-        h = h.view(-1, 8192)
+        h = h.view(-1, 8192)  #!!!!!
         h = self.relu(self.fc6(h))
         h = self.dropout(h)
         h = self.relu(self.fc7(h))
@@ -69,7 +69,7 @@ class C3D(nn.Module):
         probs = self.softmax(logits)
         # probs = self.sigmoid(logits)
 
-        return logits
+        return probs
 
 """
 References

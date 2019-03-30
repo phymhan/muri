@@ -192,7 +192,7 @@ def __get_bbox(img, args):
     img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
 
-def get_transform(opt):
+def get_transform(args):
     transform_list = [transforms.ToPILImage()]
     transform_list.append(transforms.Lambda(
         lambda x: __get_bbox(x, args)
