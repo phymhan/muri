@@ -79,7 +79,7 @@ def train(args, data_loader, model, criterion, optimizer, epoch):
         data_time.update(time.time() - end)
 
         # compute output
-        score = model(x1.cuda(), x2.cuda())
+        score = model.forward(x1.cuda(), x2.cuda())
 
         loss = criterion(score, y.long().cuda())
 
@@ -123,7 +123,7 @@ def validate(args, val_loader, model, criterion):
             for i, (x1, x2, y) in enumerate(val_loader):
 
                 # compute output
-                score = model(x1.cuda(), x2.cuda())
+                score = model.forward(x1.cuda(), x2.cuda())
                 loss = criterion(score, y.long().cuda())
 
                 # measure accuracy and record loss

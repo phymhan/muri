@@ -124,6 +124,9 @@ class C3D2(nn.Module):
         logits = self.part2(h)
         return logits
 
+    def __call__(self, x):
+        return nn.Softmax()(self.part2(self.part1(x)))
+
 """
 References
 ----------

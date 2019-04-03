@@ -12,7 +12,8 @@ def sample_video_clip2(file1_path, file2_path, clip_step=1, clip_length=16, verb
     video2_data = skvideo.io.vread(file2_path)
     video_length = video1_data.shape[0]
 
-    clip_start = randint(0, video_length - (clip_step * (clip_length - 1) + 1))
+    clip_start = 0
+    # clip_start = randint(0, video_length - (clip_step * (clip_length - 1) + 1))
     clip1_data = video1_data[clip_start::clip_step, :, :, :][:clip_length, :, :, :]
     clip2_data = video2_data[clip_start::clip_step, :, :, :][:clip_length, :, :, :]
 
@@ -54,9 +55,9 @@ class VideoFolder2(data.Dataset):
         return len(self.videos)
 
     def __getitem__(self, index):
-        print('index: %d' % index)
+        # print('index: %d' % index)
         video1, video2, video_label = self.videos[index]
-        print(video1, video2)
+        # print(video1, video2)
         # if index == 2:
         #     images1, images2 = sample_video_clip2(video1, video2, self.clip_step, self.clip_length, True)
         # else:

@@ -16,7 +16,7 @@ import torch.nn as nn
 import torch
 import os
 
-from model import C3D
+from model2 import C3D2
 from dataset import VideoFolder
 import dataset
 
@@ -60,6 +60,10 @@ def view_cam(images, gcam):
 
 
 def save_cam(filename, images, gcam):
+    # zero out boarders
+    print(gcam.shape)
+    print(gcam[0,2,...])
+
     gcam = gcam - np.min(gcam)
     gcam = gcam / np.max(gcam)
 
@@ -93,8 +97,15 @@ if __name__ == '__main__':
     parser.add_argument('--layer', type=str, required=True)
     parser.add_argument('--num_classes', type=int, default=9)
     parser.add_argument('--name', type=str, default='1')
+    parser.add_argument('--output_dir', type=str, default='att_res')
+    parser.add_argument('--arch', type=int, default=1)
+    parser.add_argument('--comb', type=int, default=1)
+    parser.add_argument('--fc_dim', type=int, default=1024)
     global args
     args = parser.parse_args()
+
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
 
 
     #################################################
@@ -102,7 +113,8 @@ if __name__ == '__main__':
     #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     print('Loading a model...')
     #model = torchvision.models.vgg19(pretrained=True)
-    model = C3D(num_classes=args.num_classes).cuda()
+    # model = C3D(num_classes=args.num_classes).cuda()
+    model = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
 
     # load model parameters
     # load model perematers for ordinary classification model
@@ -169,5 +181,5 @@ if __name__ == '__main__':
 
     # view_cam(image_list, gcam_data)
     # file_name = 'att_res/' + str(spy_score) + '.png'
-    file_name = 'att_res/' + args.name + '.png'
+    file_name = os.path.join(args.output_dir, args.name + '.png')
     save_cam(file_name, image_list, gcam_data)
