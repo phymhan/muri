@@ -144,8 +144,11 @@ class GradCAM(PropBase):
             gcam = gcam[:,None,:,:]
             self.grads.detach()
         if type == 'raw':
-            gcam = torch.sum(self.activiation, dim=1)
-            self.grads.detach()
+            gcam = torch.abs(torch.sum(self.activiation, dim=1))
+            shape = gcam.shape
+            mask = torch.ones(shape[0], shape[1], shape[2]-2, shape[3]-2)
+            mask = torch.nn.functional.pad(mask, (1, 1, 1, 1), mode='constant', value=0)
+            self.grads.detach() * mask
         if type == 'pw_cw':
             gcam_tmp = self.grads.cuda() * self.activiation
             self.grads = F.relu(self.grads)

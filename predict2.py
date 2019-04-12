@@ -74,6 +74,7 @@ def train(args, data_loader, model, criterion, optimizer, epoch):
 
     end = time.time()
     for i, (x1, x2, y) in enumerate(data_loader):
+        print(y)
 
         # measure data loading time
         data_time.update(time.time() - end)
@@ -202,6 +203,7 @@ if __name__ == '__main__':
     parser.add_argument('--arch', type=int, default=1)
     parser.add_argument('--comb', type=int, default=1)
     parser.add_argument('--fc_dim', type=int, default=4096)
+    parser.add_argument('--lr', type=float, default=0.001)
 
     args = parser.parse_args()
     print_options(parser, args)
@@ -211,9 +213,11 @@ if __name__ == '__main__':
         VideoFolder2(args.dataroot, args.datafile, transform=transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
-            transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
+            transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+        ]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
         batch_size=args.batch_size, num_workers=args.num_workers,
-        shuffle=True, pin_memory=True, drop_last=True)
+        shuffle=False, pin_memory=True, drop_last=True)
 
     # val_loader = torch.utils.data.DataLoader(
     #     VideoFolder2(args.dataroot, args.datafile_val, transform=transforms.Compose([
@@ -224,7 +228,7 @@ if __name__ == '__main__':
     #     shuffle=False, pin_memory=True, drop_last=False)
 
     net = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
-    optimizer = optim.Adam(net.parameters(), lr=0.001, betas=(0.9, 0.999))
+    optimizer = optim.Adam(net.parameters(), lr=args.lr, betas=(0.9, 0.999))
     criterion = nn.CrossEntropyLoss()
 
     for epoch in range(0, args.num_epochs):

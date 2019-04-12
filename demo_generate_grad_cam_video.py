@@ -38,7 +38,6 @@ def view_cam(images, gcam):
 
     repeat = np.full(gcam.shape[1], (video_clip_length / gcam.shape[1]), dtype=np.int64)
     print(gcam.shape)
-    print(repeat)
     gcam_repeat = np.repeat(gcam, repeat, axis=1)
     cams = np.zeros((224 * 2, 224 * gcam_repeat.shape[1], 3), np.uint8)
     for ind, image in enumerate(images):
@@ -61,8 +60,8 @@ def view_cam(images, gcam):
 
 def save_cam(filename, images, gcam):
     # zero out boarders
-    print(gcam.shape)
-    print(gcam[0,2,...])
+    # print(gcam.shape)
+    # print(gcam[0,2,...])
 
     gcam = gcam - np.min(gcam)
     gcam = gcam / np.max(gcam)
