@@ -79,9 +79,6 @@ def train(args, data_loader, model, criterion, optimizer, epoch):
 
         # compute output
         score = model.forward(x1.cuda(), x2.cuda())
-        print(x1.size())
-        print(score.size())
-
         loss = criterion(score, y.long().cuda())
 
         # compute gradient and do SGD step
