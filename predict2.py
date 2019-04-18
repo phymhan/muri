@@ -215,7 +215,10 @@ def main_train(args):
             net.cuda()
         with open(os.path.join(args.save_dir, 'loss.txt'), 'a+') as f:
             f.write('epoch %d: acc %.2f\n' % (epoch + 1, acc * 100))
+
     torch.save(net.cpu().state_dict(), os.path.join(args.save_dir, '{}_net.pth'.format('latest')))
+    args.model_path = os.path.join(args.save_dir, 'latest_net.pth')
+    main_test(args)
 
 
 def main_test(args):
