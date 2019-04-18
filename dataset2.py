@@ -4,26 +4,38 @@ import torch
 import skvideo.io
 import skvideo.datasets
 import torch.utils.data as data
-from random import randint
+import numpy
+EPS_FRAME = 3
 
 
-def sample_video_clip2(file1_path, file2_path, clip_step=1, clip_length=16, verbose=False):
+def sample_video_clip2(file1_path, file2_path, clip_step=1, clip_length=16):
     video1_data = skvideo.io.vread(file1_path)
     video2_data = skvideo.io.vread(file2_path)
-    video_length = video1_data.shape[0]
-
-    clip_start = 0
-    # clip_start = randint(0, video_length - (clip_step * (clip_length - 1) + 1))
-    clip1_data = video1_data[clip_start::clip_step, :, :, :][:clip_length, :, :, :]
-    clip2_data = video2_data[clip_start::clip_step, :, :, :][:clip_length, :, :, :]
-
-    if verbose:
-        print(video1_data)
-        # print(video2_data)
-        print(clip1_data)
-        # print(clip2_data)
-
-    return clip1_data[::1, :, :, :], clip2_data[::1, :, :, :]
+    video_length = min(video1_data.shape[0], video2_data.shape[0])
+    clip_start = numpy.random.randint(0, video_length - (clip_step * (clip_length - 1) + 1))
+    if abs(video1_data.shape[0]-video2_data.shape[0]) <= EPS_FRAME:
+        clip_step1 = clip_step
+        clip_step2 = clip_step
+        clip_start1 = clip_start
+        clip_start2 = clip_start
+    elif abs(video1_data.shape[0]*2-video2_data.shape[0]) <= EPS_FRAME:
+        clip_step1 = clip_step
+        clip_step2 = 2 * clip_step
+        clip_start1 = clip_start
+        clip_start2 = 2 * clip_start
+    else:
+        clip_step1 = 2 * clip_step
+        clip_step2 = clip_step
+        clip_start1 = 2 * clip_start
+        clip_start2 = clip_start
+    clip_start1 = min(clip_start1, video1_data.shape[0] - (clip_step1 * (clip_length - 1) + 1))
+    clip_start2 = min(clip_start2, video2_data.shape[0] - (clip_step2 * (clip_length - 1) + 1))
+    # print(file1_path)
+    # print(file2_path)
+    # print(clip_start)
+    clip1_data = video1_data[clip_start1:clip_start1+clip_step1*clip_length:clip_step1, :, :, :]
+    clip2_data = video2_data[clip_start2:clip_start2+clip_step2*clip_length:clip_step2, :, :, :]
+    return clip1_data, clip2_data
 
 
 def make_dataset2(dataroot, datafile):
@@ -55,23 +67,13 @@ class VideoFolder2(data.Dataset):
         return len(self.videos)
 
     def __getitem__(self, index):
-        # print('index: %d' % index)
         video1, video2, video_label = self.videos[index]
-        # print(video1, video2)
-        # if index == 2:
-        #     images1, images2 = sample_video_clip2(video1, video2, self.clip_step, self.clip_length, True)
-        # else:
-        #     images1, images2 = sample_video_clip2(video1, video2, self.clip_step, self.clip_length)
         images1, images2 = sample_video_clip2(video1, video2, self.clip_step, self.clip_length)
         video1, video2 = [], []
         if self.transform is not None:
             for image1, image2 in zip(images1, images2):
                 video1.append(self.transform(image1))
                 video2.append(self.transform(image2))
-        # if index == 2:
-        #     print(video1)
-        #     print(images1)
-        #     print(video1[0].size())
         video1 = torch.stack(video1).transpose(0, 1)
         video2 = torch.stack(video2).transpose(0, 1)
         return video1, video2, video_label

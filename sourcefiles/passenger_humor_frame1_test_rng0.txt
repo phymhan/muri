@@ -1,0 +1,8 @@
+Dyad11Drive1/frame1_driver.mp4 Dyad11Drive1/frame1_passenger.mp4 4
+Dyad11Drive2/frame1_driver.mp4 Dyad11Drive2/frame1_passenger.mp4 5
+Dyad14Drive1/frame1_driver.mp4 Dyad14Drive1/frame1_passenger.mp4 7
+Dyad14Drive2/frame1_driver.mp4 Dyad14Drive2/frame1_passenger.mp4 8
+Dyad18Drive1/frame1_driver.mp4 Dyad18Drive1/frame1_passenger.mp4 8
+Dyad19Drive2/frame1_driver.mp4 Dyad19Drive2/frame1_passenger.mp4 6
+Dyad2Drive2/frame1_driver.mp4 Dyad2Drive2/frame1_passenger.mp4 6
+Dyad8Drive2/frame1_driver.mp4 Dyad8Drive2/frame1_passenger.mp4 8

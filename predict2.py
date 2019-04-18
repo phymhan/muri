@@ -74,13 +74,13 @@ def train(args, data_loader, model, criterion, optimizer, epoch):
 
     end = time.time()
     for i, (x1, x2, y) in enumerate(data_loader):
-        print(y)
-
         # measure data loading time
         data_time.update(time.time() - end)
 
         # compute output
         score = model.forward(x1.cuda(), x2.cuda())
+        print(x1.size())
+        print(score.size())
 
         loss = criterion(score, y.long().cuda())
 
@@ -183,6 +183,59 @@ def get_transform(args):
     return transforms.Compose(transform_list)
 
 
+def main_train(args):
+    train_loader = torch.utils.data.DataLoader(
+        VideoFolder2(args.dataroot, args.datafile, transform=transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+        ]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
+        batch_size=args.batch_size, num_workers=args.num_workers,
+        shuffle=True, pin_memory=True, drop_last=True)
+
+    # val_loader = torch.utils.data.DataLoader(
+    #     VideoFolder2(args.dataroot, args.datafile_val, transform=transforms.Compose([
+    #         transforms.ToPILImage(),
+    #         transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
+    #         transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
+    #     batch_size=args.batch_size, num_workers=0,
+    #     shuffle=False, pin_memory=True, drop_last=False)
+
+    net = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
+    optimizer = optim.Adam(net.parameters(), lr=args.lr, betas=(0.9, 0.999))
+    criterion = nn.CrossEntropyLoss()
+
+    for epoch in range(0, args.num_epochs):
+        acc = train(args, train_loader, net, criterion, optimizer, epoch)
+        # prec = validate(args, val_loader, net, criterion)
+        if (epoch + 1) % args.save_freq == 0:
+            torch.save(net.cpu().state_dict(), os.path.join(args.save_dir, '{}_net.pth'.format(epoch + 1)))
+            # if opt.use_gpu:
+            net.cuda()
+        with open(os.path.join(args.save_dir, 'loss.txt'), 'a+') as f:
+            f.write('epoch %d: acc %.2f\n' % (epoch + 1, acc * 100))
+    torch.save(net.cpu().state_dict(), os.path.join(args.save_dir, '{}_net.pth'.format('latest')))
+
+
+def main_test(args):
+    val_loader = torch.utils.data.DataLoader(
+        VideoFolder2(args.dataroot, args.datafile_val, transform=transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
+            transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
+        batch_size=args.batch_size, num_workers=0,
+        shuffle=False, pin_memory=False, drop_last=False)
+
+    net = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
+    net.load_state_dict(torch.load(args.model_path))
+
+    criterion = nn.CrossEntropyLoss()
+
+    prec = validate(args, val_loader, net, criterion)
+    print(prec)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=1)
@@ -201,43 +254,17 @@ if __name__ == '__main__':
     parser.add_argument('--num_classes', type=int, default=9)
     parser.add_argument('--fineSize', type=int, default=112)
     parser.add_argument('--arch', type=int, default=1)
-    parser.add_argument('--comb', type=int, default=1)
+    parser.add_argument('--comb', type=int, default=2)
     parser.add_argument('--fc_dim', type=int, default=4096)
-    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--lr', type=float, default=0.0001)
+    parser.add_argument('--validate', action='store_true')
+    parser.add_argument('--model_path', type=str, default='model.pth')
 
     args = parser.parse_args()
     print_options(parser, args)
     args.save_dir = os.path.join(args.checkpoint_dir, args.name)
 
-    train_loader = torch.utils.data.DataLoader(
-        VideoFolder2(args.dataroot, args.datafile, transform=transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
-            transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
-        ]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
-        batch_size=args.batch_size, num_workers=args.num_workers,
-        shuffle=False, pin_memory=True, drop_last=True)
-
-    # val_loader = torch.utils.data.DataLoader(
-    #     VideoFolder2(args.dataroot, args.datafile_val, transform=transforms.Compose([
-    #         transforms.ToPILImage(),
-    #         transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
-    #         transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
-    #     batch_size=args.batch_size, num_workers=0,
-    #     shuffle=False, pin_memory=True, drop_last=False)
-
-    net = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
-    optimizer = optim.Adam(net.parameters(), lr=args.lr, betas=(0.9, 0.999))
-    criterion = nn.CrossEntropyLoss()
-
-    for epoch in range(0, args.num_epochs):
-        acc = train(args, train_loader, net, criterion, optimizer, epoch)
-        # prec = validate(args, val_loader, net, criterion)
-        if (epoch+1) % args.save_freq == 0:
-            torch.save(net.cpu().state_dict(), os.path.join(args.save_dir, '{}_net.pth'.format(epoch+1)))
-            # if opt.use_gpu:
-            net.cuda()
-        with open(os.path.join(args.save_dir, 'loss.txt'), 'a+') as f:
-            f.write('epoch %d: acc %.2f\n' % (epoch+1, acc*100))
-    torch.save(net.cpu().state_dict(), os.path.join(args.save_dir, '{}_net.pth'.format('latest')))
+    if args.validate:
+        main_test(args)
+    else:
+        main_train(args)
