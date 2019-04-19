@@ -117,7 +117,7 @@ def validate(args, val_loader, model, criterion):
 
     end = time.time()
     with torch.no_grad():
-        for k in range(1):
+        for k in range(args.K):
             for i, (x1, x2, y) in enumerate(val_loader):
 
                 # compute output
@@ -215,6 +215,7 @@ def main_train(args):
 
     torch.save(net.cpu().state_dict(), os.path.join(args.save_dir, '{}_net.pth'.format('latest')))
     args.model_path = os.path.join(args.save_dir, 'latest_net.pth')
+    args.datafile_val = args.datafile.replace('_train', '_test')
     main_test(args)
 
 
@@ -259,6 +260,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=0.0001)
     parser.add_argument('--validate', action='store_true')
     parser.add_argument('--model_path', type=str, default='model.pth')
+    parser.add_argument('--K', type=int, default=1)
 
     args = parser.parse_args()
     print_options(parser, args)
