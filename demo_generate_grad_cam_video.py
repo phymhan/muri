@@ -17,6 +17,7 @@ import torch
 import os
 
 from model2 import C3D2
+from model import C3D
 from dataset import VideoFolder
 import dataset
 
@@ -112,8 +113,8 @@ if __name__ == '__main__':
     #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     print('Loading a model...')
     #model = torchvision.models.vgg19(pretrained=True)
-    # model = C3D(num_classes=args.num_classes).cuda()
-    model = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
+    model = C3D(num_classes=args.num_classes, fc_dim=args.fc_dim).cuda()
+    # model = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
 
     # load model parameters
     # load model perematers for ordinary classification model
@@ -128,7 +129,7 @@ if __name__ == '__main__':
     # label = float(video_path[:-4].split('_')[-1])
     label = 8
     video_frame_size = 112
-    video_clip_step = 5
+    video_clip_step = 20
     video_clip_length = 16
     num_workers = 0
 

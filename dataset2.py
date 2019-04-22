@@ -77,3 +77,59 @@ class VideoFolder2(data.Dataset):
         video1 = torch.stack(video1).transpose(0, 1)
         video2 = torch.stack(video2).transpose(0, 1)
         return video1, video2, video_label
+
+
+class VideoFile2(data.Dataset):
+
+    def __init__(self, datapath1='', datapath2='', label=0, transform=None, clip_step=1, clip_length=16):
+        print(datapath1, datapath2)
+        self.meta1 = skvideo.io.ffprobe(datapath1)
+        self.meta2 = skvideo.io.ffprobe(datapath2)
+        print(self.meta1)
+        print(self.meta2)
+        self.datapath1 = datapath1
+        self.datapath2 = datapath2
+        # self.chunk1 = skvideo.io.vread(datapath1)
+        # self.chunk2 = skvideo.io.vread(datapath2)
+        # try:
+        #     self.chunk1 = skvideo.io.vread(datapath1)
+        # except:
+        #     raise RuntimeError
+        # try:
+        #     self.chunk2 = skvideo.io.vread(datapath2)
+        # except:
+        #     raise RuntimeError
+        # print(self.chunk1.shape)
+        # print(self.chunk2.shape)
+        self.nb_frames1 = int(self.meta1['video']['@nb_frames'])
+        self.nb_frames2 = int(self.meta2['video']['@nb_frames'])
+        if abs(self.nb_frames1 - self.nb_frames2) <= EPS_FRAME:
+            self._clip_step1 = clip_step
+            self._clip_step2 = clip_step
+        elif abs(self.nb_frames1 * 2 - self.nb_frames2) <= EPS_FRAME:
+            self._clip_step1 = clip_step
+            self._clip_step2 = 2 * clip_step
+        else:
+            self._clip_step1 = 2 * clip_step
+            self._clip_step2 = clip_step
+        self._clip_length = clip_length
+        self._label = int(label)
+        self.transform = transform
+        print(datapath1, datapath2)
+
+    def __len__(self):
+        return int(self.nb_frames1/(self._clip_step1*self._clip_length))
+
+    def __getitem__(self, index):
+        chunk1 = skvideo.io.vread(self.datapath1)
+        chunk2 = skvideo.io.vread(self.datapath2)
+        images1 = chunk1[index*self._clip_step1*self._clip_length:(index+1)*self._clip_step1*self._clip_length:self._clip_step1, :, :, :]
+        images2 = chunk2[index * self._clip_step2 * self._clip_length:(index + 1) * self._clip_step2 * self._clip_length:self._clip_step2, :, :, :]
+        video1, video2 = [], []
+        if self.transform is not None:
+            for image1, image2 in zip(images1, images2):
+                video1.append(self.transform(image1))
+                video2.append(self.transform(image2))
+        video1 = torch.stack(video1).transpose(0, 1)
+        video2 = torch.stack(video2).transpose(0, 1)
+        return video1, video2, self._label

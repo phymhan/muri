@@ -15,7 +15,7 @@ from torch.nn import functional as F
 import os
 import gc
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 class PropBase(object):
@@ -58,7 +58,6 @@ class PropBase(object):
     def forward(self, image_):
         self.preds = self.model(image_)
         self.probs = F.softmax(self.preds)
-
 
     # back prop the one_hot signal
     def backward(self, idx):
@@ -145,10 +144,11 @@ class GradCAM(PropBase):
             self.grads.detach()
         if type == 'raw':
             gcam = torch.abs(torch.sum(self.activiation, dim=1))
+            self.grads.detach()
             shape = gcam.shape
-            mask = torch.ones(shape[0], shape[1], shape[2]-2, shape[3]-2)
-            mask = torch.nn.functional.pad(mask, (1, 1, 1, 1), mode='constant', value=0)
-            self.grads.detach() * mask
+            # mask = torch.ones(shape[0], shape[1], shape[2]-2, shape[3]-2)
+            # mask = torch.nn.functional.pad(mask, (1, 1, 1, 1), mode='constant', value=0)
+            # self.grads.detach() * mask
         if type == 'pw_cw':
             gcam_tmp = self.grads.cuda() * self.activiation
             self.grads = F.relu(self.grads)

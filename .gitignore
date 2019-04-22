@@ -9,3 +9,7 @@ samples*/
 pretrained_models/
 results*/
 sourcefiles_old
+*.mp4
+*/*.mp4
+face_video
+att_res

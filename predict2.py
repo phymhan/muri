@@ -15,9 +15,10 @@ from sklearn.metrics import accuracy_score
 from scipy import stats
 
 from model2 import C3D2
-from dataset2 import VideoFolder2
+from dataset2 import VideoFolder2, VideoFile2
 from PIL import Image
 import cv2
+import scipy.stats
 
 
 def init_weights(m):
@@ -140,6 +141,49 @@ def validate(args, val_loader, model, criterion):
     return prec.avg
 
 
+def validate_seq(args, val_loader, model, criterion):
+    """
+    Run evaluation
+    """
+    batch_time = AverageMeter()
+    losses = AverageMeter()
+    # prec = AverageMeter()
+
+    # switch to evaluate mode
+    model.eval()
+
+    end = time.time()
+    pred = []
+    with torch.no_grad():
+        for i, (x1, x2, y) in enumerate(val_loader):
+
+            # compute output
+            score = model.forward(x1.cuda(), x2.cuda())
+            loss = criterion(score, y.long().cuda())
+
+            # measure accuracy and record loss
+            losses.update(loss.item(), y.size(0))
+            pred.append(score.data.cpu().numpy().argmax())
+            # prec.update(accuracy(score.data.cpu(), y), y.size(0))
+
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+            end = time.time()
+
+            print('val: clip %d' % (i+1))
+
+    print(pred)
+    print(y[0])
+    prec = int(stats.mode(pred)[0] == y[0].data.cpu().numpy())
+    # print('Test: Time {batch_time.avg:.3f}\t'
+    #     'Loss {loss.avg:.4f}\t'
+    #     'Prec {prec.avg:.3f}'.format(batch_time=batch_time, loss=losses, prec=prec))
+    print('Test: Time {batch_time.avg:.3f}\t'
+          'Loss {loss.avg:.4f}\t'
+          'Prec {prec:.3f}'.format(batch_time=batch_time, loss=losses, prec=prec))
+    return prec
+
+
 def print_options(parser, opt):
     message = ''
     message += '--------------- Options -----------------\n'
@@ -214,6 +258,7 @@ def main_train(args):
             f.write('epoch %d: acc %.2f\n' % (epoch + 1, acc * 100))
 
     torch.save(net.cpu().state_dict(), os.path.join(args.save_dir, '{}_net.pth'.format('latest')))
+    args.batch_size = 1
     args.model_path = os.path.join(args.save_dir, 'latest_net.pth')
     args.datafile_val = args.datafile.replace('_train', '_test')
     main_test(args)
@@ -235,6 +280,30 @@ def main_test(args):
 
     prec = validate(args, val_loader, net, criterion)
     print(prec)
+
+
+def main_test_seq(args):
+    net = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
+    net.load_state_dict(torch.load(args.model_path))
+    criterion = nn.CrossEntropyLoss()
+    prec = AverageMeter()
+
+    with open(args.datafile_val, 'r') as f:
+        for line in f.readlines():
+            print(line)
+            file1 = os.path.join(args.dataroot, line.strip('\n').split()[0])
+            file2 = os.path.join(args.dataroot, line.strip('\n').split()[1])
+            label = line.strip('\n').split()[2]
+            val_loader = torch.utils.data.DataLoader(
+                VideoFile2(file1, file2, label, transform=transforms.Compose([
+                    transforms.ToPILImage(),
+                    transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
+                    transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
+                batch_size=1, num_workers=1,
+                shuffle=False, pin_memory=False, drop_last=False)
+            prec_ = validate_seq(args, val_loader, net, criterion)
+            prec.update(prec_, 1)
+            print(f'Prec {prec.val:.3f} ({prec.avg:.3f})')
 
 
 if __name__ == '__main__':
@@ -267,6 +336,6 @@ if __name__ == '__main__':
     args.save_dir = os.path.join(args.checkpoint_dir, args.name)
 
     if args.validate:
-        main_test(args)
+        main_test_seq(args)
     else:
         main_train(args)

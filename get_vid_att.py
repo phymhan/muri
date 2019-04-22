@@ -13,7 +13,7 @@ if __name__ == '__main__':
     parser.add_argument('--which_epoch', type=str, default='100')
     parser.add_argument('--checkpoint_dir', type=str, default='checkpoints')
     parser.add_argument('--arch', type=int, default=1)
-    parser.add_argument('--comb', type=int, default=1)
+    parser.add_argument('--comb', type=int, default=2)
     parser.add_argument('--fc_dim', type=int, default=4096)
     args = parser.parse_args()
 
@@ -28,4 +28,3 @@ if __name__ == '__main__':
                   ' --arch ' + str(args.arch) + ' --comb ' + str(args.comb) + ' --fc_dim ' + str(args.fc_dim)
             print(cmd)
             os.system(cmd)
-            exit(0)
