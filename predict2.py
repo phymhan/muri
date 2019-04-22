@@ -109,6 +109,9 @@ def validate(args, val_loader, model, criterion):
     """
     Run evaluation
     """
+    if val_loader is None:
+        return 0
+
     batch_time = AverageMeter()
     losses = AverageMeter()
     prec = AverageMeter()
@@ -235,13 +238,16 @@ def main_train(args):
         batch_size=args.batch_size, num_workers=args.num_workers,
         shuffle=True, pin_memory=True, drop_last=True)
 
-    # val_loader = torch.utils.data.DataLoader(
-    #     VideoFolder2(args.dataroot, args.datafile_val, transform=transforms.Compose([
-    #         transforms.ToPILImage(),
-    #         transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
-    #         transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
-    #     batch_size=args.batch_size, num_workers=0,
-    #     shuffle=False, pin_memory=True, drop_last=False)
+    if args.datafile_val:
+        val_loader = torch.utils.data.DataLoader(
+            VideoFolder2(args.dataroot, args.datafile_val, transform=transforms.Compose([
+                transforms.ToPILImage(),
+                transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
+                transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
+            batch_size=args.batch_size, num_workers=0,
+            shuffle=False, pin_memory=True, drop_last=False)
+    else:
+        val_loader = None
 
     net = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
     optimizer = optim.Adam(net.parameters(), lr=args.lr, betas=(0.9, 0.999))
@@ -249,13 +255,13 @@ def main_train(args):
 
     for epoch in range(0, args.num_epochs):
         acc = train(args, train_loader, net, criterion, optimizer, epoch)
-        # prec = validate(args, val_loader, net, criterion)
+        prec = validate(args, val_loader, net, criterion)
         if (epoch + 1) % args.save_freq == 0:
             torch.save(net.cpu().state_dict(), os.path.join(args.save_dir, '{}_net.pth'.format(epoch + 1)))
             # if opt.use_gpu:
             net.cuda()
         with open(os.path.join(args.save_dir, 'loss.txt'), 'a+') as f:
-            f.write('epoch %d: acc %.2f\n' % (epoch + 1, acc * 100))
+            f.write(f'epoch {epoch+1}: acc {acc*100:.2f}, val acc {prec*100:.2f}\n')
 
     torch.save(net.cpu().state_dict(), os.path.join(args.save_dir, '{}_net.pth'.format('latest')))
     args.batch_size = 1
