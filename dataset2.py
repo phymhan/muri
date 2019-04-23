@@ -38,7 +38,7 @@ def sample_video_clip2(file1_path, file2_path, clip_step=1, clip_length=16):
     return clip1_data, clip2_data
 
 
-def make_dataset2(dataroot, datafile):
+def make_dataset2(dataroot, datafile, binarize=False):
     video_files = []
 
     for line in datafile:
@@ -47,6 +47,8 @@ def make_dataset2(dataroot, datafile):
         file1_name = line_[0]
         file2_name = line_[1]
         label = int(line_[2])
+        if binarize:
+            label = 0 if label < 5 else 1
         video_files.append((os.path.join(dataroot, file1_name), os.path.join(dataroot, file2_name), label))
 
     return video_files
@@ -54,10 +56,10 @@ def make_dataset2(dataroot, datafile):
 
 class VideoFolder2(data.Dataset):
 
-    def __init__(self, dataroot='', datafile='', transform=None, clip_step=1, clip_length=16):
+    def __init__(self, dataroot='', datafile='', transform=None, clip_step=1, clip_length=16, binarize=False):
         with open(datafile, 'r') as f:
             self.datafile = [l.rstrip('\n') for l in f.readlines()]
-        self.videos = make_dataset2(dataroot, self.datafile)
+        self.videos = make_dataset2(dataroot, self.datafile, binarize)
         self.clip_step = clip_step
         self.clip_length = clip_length
         self.transform = transform

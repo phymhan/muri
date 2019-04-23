@@ -234,7 +234,8 @@ def main_train(args):
             transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
-        ]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
+        ]), clip_step=args.video_clip_step, clip_length=args.video_clip_length,
+                     binarize=args.binarize),
         batch_size=args.batch_size, num_workers=args.num_workers,
         shuffle=True, pin_memory=True, drop_last=True)
 
@@ -243,7 +244,8 @@ def main_train(args):
             VideoFolder2(args.dataroot, args.datafile_val, transform=transforms.Compose([
                 transforms.ToPILImage(),
                 transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
-                transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
+                transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length,
+                         binarize=args.binarize),
             batch_size=args.batch_size, num_workers=0,
             shuffle=False, pin_memory=True, drop_last=False)
     else:
@@ -275,7 +277,8 @@ def main_test(args):
         VideoFolder2(args.dataroot, args.datafile_val, transform=transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
-            transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length),
+            transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length,
+                     binarize=args.binarize),
         batch_size=args.batch_size, num_workers=0,
         shuffle=False, pin_memory=False, drop_last=False)
 
@@ -336,6 +339,7 @@ if __name__ == '__main__':
     parser.add_argument('--validate', action='store_true')
     parser.add_argument('--model_path', type=str, default='model.pth')
     parser.add_argument('--K', type=int, default=1)
+    parser.add_argument('--binarize', action='store_true')
 
     args = parser.parse_args()
     print_options(parser, args)
