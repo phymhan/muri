@@ -252,6 +252,8 @@ def main_train(args):
         val_loader = None
 
     net = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
+    if args.pretrain:
+        net.load_state_dict(torch.load(args.pretrain))
     optimizer = optim.Adam(net.parameters(), lr=args.lr, betas=(0.9, 0.999))
     criterion = nn.CrossEntropyLoss()
 
@@ -338,6 +340,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=0.0001)
     parser.add_argument('--validate', action='store_true')
     parser.add_argument('--model_path', type=str, default='model.pth')
+    parser.add_argument('--pretrain', type=str, default='')
     parser.add_argument('--K', type=int, default=1)
     parser.add_argument('--binarize', action='store_true')
 

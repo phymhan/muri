@@ -11,5 +11,9 @@ results*/
 sourcefiles_old
 *.mp4
 */*.mp4
+*.png
+*/*.png
+*.jpg
+*/*.jpg
 face_video
 att_res
