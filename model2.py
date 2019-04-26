@@ -140,6 +140,49 @@ class C3D2(nn.Module):
     def __call__(self, x):
         return nn.Softmax()(self.part2(self.part1(x)))
 
+    def load_pretrained_weights(self, model_path):
+        """Initialiaze network."""
+        corresp_name = {
+            # Conv1
+            "features.0.weight": "conv1.weight",
+            "features.0.bias": "conv1.bias",
+            # Conv2
+            "features.3.weight": "conv2.weight",
+            "features.3.bias": "conv2.bias",
+            # Conv3a
+            "features.6.weight": "conv3a.weight",
+            "features.6.bias": "conv3a.bias",
+            # Conv3b
+            "features.8.weight": "conv3b.weight",
+            "features.8.bias": "conv3b.bias",
+            # Conv4a
+            "features.11.weight": "conv4a.weight",
+            "features.11.bias": "conv4a.bias",
+            # Conv4b
+            "features.13.weight": "conv4b.weight",
+            "features.13.bias": "conv4b.bias",
+            # Conv5a
+            "features.16.weight": "conv5a.weight",
+            "features.16.bias": "conv5a.bias",
+            # Conv5b
+            "features.18.weight": "conv5b.weight",
+            "features.18.bias": "conv5b.bias",
+            # fc6
+            "classifier.0.weight": "fc6.weight",
+            "classifier.0.bias": "fc6.bias",
+            # fc7
+            "classifier.3.weight": "fc7.weight",
+            "classifier.3.bias": "fc7.bias",
+        }
+
+        p_dict = torch.load(model_path)
+        s_dict = self.state_dict()
+        for name in p_dict:
+            if name not in corresp_name:
+                continue
+            s_dict[corresp_name[name]] = p_dict[name]
+        self.load_state_dict(s_dict)
+
 """
 References
 ----------

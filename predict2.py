@@ -253,7 +253,7 @@ def main_train(args):
 
     net = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
     if args.pretrain:
-        net.load_state_dict(torch.load(args.pretrain))
+        net.load_pretrained_weights(args.pretrain)
     optimizer = optim.Adam(net.parameters(), lr=args.lr, betas=(0.9, 0.999))
     criterion = nn.CrossEntropyLoss()
 
