@@ -230,7 +230,8 @@ def get_transform(args):
 
 def main_train(args):
     if args.landmark:
-        fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, flip_input=True, device='cuda')  # FIXME: cuda
+        fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, face_detector=args.detector,
+                                          flip_input=True, device='cuda')  # FIXME: cuda
         input_dim = 4
     else:
         fa = None
@@ -352,6 +353,7 @@ if __name__ == '__main__':
     parser.add_argument('--K', type=int, default=1)
     parser.add_argument('--binarize', action='store_true')
     parser.add_argument('--landmark', action='store_true')
+    parser.add_argument('--detector', type=str, default='sfd')
     parser.add_argument('--gpu-id', type=str, default='0')
 
     args = parser.parse_args()
