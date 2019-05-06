@@ -9,6 +9,7 @@ import numpy as np
 import face_alignment
 from facial_landmarks import get_heatmap_from_image
 import cv2
+from copy import deepcopy
 EPS_FRAME = 3
 
 
@@ -74,7 +75,7 @@ class VideoFolder2(data.Dataset):
         self.clip_length = clip_length
         self.transform = transform
         self._landmark = landmark
-        self.fa = fa
+        self.fa = fa  # FIXME: change to None after a few references
         print('Dataset size %d.' % len(self.videos))
 
     def __len__(self):
@@ -89,6 +90,7 @@ class VideoFolder2(data.Dataset):
                 image1 = self.transform(image1_)
                 image2 = self.transform(image2_)
                 if self._landmark:
+                    print(self.fa)
                     lm1 = get_heatmap_from_image(image1_, self.fa)[0]
                     lm1 = upsample_image(lm1, (image1.size(1), image1.size(2)))
                     lm2 = get_heatmap_from_image(image2_, self.fa)[0]

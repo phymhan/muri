@@ -58,7 +58,8 @@ def get_heatmap_from_image(image_or_path, fa, detected_faces=None):
             inp = crop(image, center, scale)
             inp = torch.from_numpy(inp.transpose(
                 (2, 0, 1))).float()
-            inp = inp.to(fa.device)
+            # inp = inp.to(fa.device)
+            inp = inp.cuda()
             inp.div_(255.0).unsqueeze_(0)
 
             out = fa.face_alignment_net(inp)[-1].detach()

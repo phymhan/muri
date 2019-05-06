@@ -231,7 +231,8 @@ def get_transform(args):
 def main_train(args):
     if args.landmark:
         fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, face_detector=args.detector,
-                                          flip_input=True, device='cuda')  # FIXME: cuda
+                                          flip_input=True, device='cuda:0')  # FIXME: cuda
+        torch.backends.cudnn.benchmark = False
         input_dim = 4
     else:
         fa = None
