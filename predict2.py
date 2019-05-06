@@ -231,8 +231,8 @@ def get_transform(args):
 def main_train(args):
     if args.landmark:
         fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, face_detector=args.detector,
-                                          flip_input=True)  # FIXME: cuda
-        torch.backends.cudnn.benchmark = False
+                                          flip_input=True, device='cpu')  # FIXME: cuda
+        # torch.backends.cudnn.benchmark = False
         input_dim = 4
     else:
         fa = None
@@ -330,7 +330,7 @@ def main_test_seq(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=1)
-    parser.add_argument('--num_workers', type=int, default=4)
+    parser.add_argument('--num_workers', type=int, default=0)
     parser.add_argument('--num_epochs', type=int, default=20)
     parser.add_argument('--print_freq', type=int, default=1)
     parser.add_argument('--save_freq', type=int, default=5)
