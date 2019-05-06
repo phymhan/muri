@@ -230,7 +230,7 @@ def get_transform(args):
 
 def main_train(args):
     if args.landmark:
-        fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, flip_input=True, device=f'cuda:{args.gpu_id}')
+        fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, flip_input=True, device='cpu')  # FIXME; cpu
         input_dim = 4
     else:
         fa = None
