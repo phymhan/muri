@@ -19,6 +19,7 @@ from dataset2 import VideoFolder2, VideoFile2
 from PIL import Image
 import cv2
 import scipy.stats
+import face_alignment
 
 
 def init_weights(m):
@@ -228,14 +229,27 @@ def get_transform(args):
 
 
 def main_train(args):
+    if args.landmark:
+        fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, flip_input=True)
+        input_dim = 4
+    else:
+        fa = None
+        input_dim = 3
+    net = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim,
+               input_dim=input_dim).cuda()
+    if args.pretrain:
+        net.load_pretrained_weights(args.pretrain)
+    optimizer = optim.Adam(net.parameters(), lr=args.lr, betas=(0.9, 0.999))
+    criterion = nn.CrossEntropyLoss()
+
     train_loader = torch.utils.data.DataLoader(
         VideoFolder2(args.dataroot, args.datafile, transform=transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
             transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+            # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
         ]), clip_step=args.video_clip_step, clip_length=args.video_clip_length,
-                     binarize=args.binarize),
+                     binarize=args.binarize, landmark=args.landmark, fa=fa),
         batch_size=args.batch_size, num_workers=args.num_workers,
         shuffle=True, pin_memory=True, drop_last=True)
 
@@ -245,17 +259,11 @@ def main_train(args):
                 transforms.ToPILImage(),
                 transforms.Resize([args.fineSize, args.fineSize], Image.BICUBIC),
                 transforms.ToTensor()]), clip_step=args.video_clip_step, clip_length=args.video_clip_length,
-                         binarize=args.binarize),
+                         binarize=args.binarize, landmark=args.landmark, fa=fa),
             batch_size=args.batch_size, num_workers=0,
             shuffle=False, pin_memory=True, drop_last=False)
     else:
         val_loader = None
-
-    net = C3D2(num_classes=args.num_classes, arch=args.arch, comb=args.comb, fc_dim=args.fc_dim).cuda()
-    if args.pretrain:
-        net.load_pretrained_weights(args.pretrain)
-    optimizer = optim.Adam(net.parameters(), lr=args.lr, betas=(0.9, 0.999))
-    criterion = nn.CrossEntropyLoss()
 
     for epoch in range(0, args.num_epochs):
         acc = train(args, train_loader, net, criterion, optimizer, epoch)
@@ -343,6 +351,7 @@ if __name__ == '__main__':
     parser.add_argument('--pretrain', type=str, default='')
     parser.add_argument('--K', type=int, default=1)
     parser.add_argument('--binarize', action='store_true')
+    parser.add_argument('--landmark', action='store_true')
 
     args = parser.parse_args()
     print_options(parser, args)

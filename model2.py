@@ -7,13 +7,13 @@ class C3D2(nn.Module):
     The C3D network as described in [1].
     """
 
-    def __init__(self, num_classes=2, arch=1, comb=1, fc_dim=4096):
+    def __init__(self, num_classes=2, arch=1, comb=1, fc_dim=4096, input_dim=3):
         super(C3D2, self).__init__()
 
         self.arch = arch
         self.comb = comb
 
-        self.conv1 = nn.Conv3d(3, 64, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.conv1 = nn.Conv3d(input_dim, 64, kernel_size=(3, 3, 3), padding=(1, 1, 1))
         self.bn1 = nn.BatchNorm3d(64)
         self.pool1 = nn.MaxPool3d(kernel_size=(1, 2, 2), stride=(1, 2, 2))
 

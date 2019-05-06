@@ -5,7 +5,16 @@ import skvideo.io
 import skvideo.datasets
 import torch.utils.data as data
 import numpy
+import numpy as np
+import face_alignment
+from facial_landmarks import get_heatmap_from_image
+import cv2
 EPS_FRAME = 3
+
+
+def upsample_image(tensor, size):
+    tensor = torch.nn.functional.interpolate(input=tensor.unsqueeze_(0), size=size, mode='bilinear', align_corners=True)
+    return tensor[0, ...]
 
 
 def sample_video_clip2(file1_path, file2_path, clip_step=1, clip_length=16):
@@ -56,13 +65,16 @@ def make_dataset2(dataroot, datafile, binarize=False):
 
 class VideoFolder2(data.Dataset):
 
-    def __init__(self, dataroot='', datafile='', transform=None, clip_step=1, clip_length=16, binarize=False):
+    def __init__(self, dataroot='', datafile='', transform=None, clip_step=1, clip_length=16,
+                 binarize=False, landmark=False, fa=None):
         with open(datafile, 'r') as f:
             self.datafile = [l.rstrip('\n') for l in f.readlines()]
         self.videos = make_dataset2(dataroot, self.datafile, binarize)
         self.clip_step = clip_step
         self.clip_length = clip_length
         self.transform = transform
+        self._landmark = landmark
+        self.fa = fa
         print('Dataset size %d.' % len(self.videos))
 
     def __len__(self):
@@ -73,9 +85,35 @@ class VideoFolder2(data.Dataset):
         images1, images2 = sample_video_clip2(video1, video2, self.clip_step, self.clip_length)
         video1, video2 = [], []
         if self.transform is not None:
-            for image1, image2 in zip(images1, images2):
-                video1.append(self.transform(image1))
-                video2.append(self.transform(image2))
+            for image1_, image2_ in zip(images1, images2):
+                image1 = self.transform(image1_)
+                image2 = self.transform(image2_)
+                if self._landmark:
+                    lm1 = get_heatmap_from_image(image1_, self.fa)[0]
+                    lm1 = upsample_image(lm1, (image1.size(1), image1.size(2)))
+                    lm2 = get_heatmap_from_image(image2_, self.fa)[0]
+                    lm2 = upsample_image(lm2, (image2.size(1), image2.size(2)))
+                    image1 = torch.cat((image1, lm1), dim=0)
+                    image2 = torch.cat((image2, lm2), dim=0)
+                video1.append(image1)
+                video2.append(image2)
+
+                # fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, flip_input=True)
+                # pred = fa.get_landmarks_from_image(image1)
+                # # print(pred)
+                #
+                # hm = get_heatmap_from_image(image1, fa)[0]
+                # image1 = self.transform(image1)
+                # print(image1.size())
+                #
+                # gcam = hm.squeeze().cpu().data.numpy()
+                # gcam = cv2.resize(gcam, (200, 200))
+                # gcam = cv2.applyColorMap(
+                #     np.uint8(255 * gcam), cv2.COLORMAP_JET)
+                # cv2.imwrite('att_res/heatmap.jpg', gcam)
+                # cv2.imwrite('att_res/image.jpg', image1)
+                # exit(0)
+
         video1 = torch.stack(video1).transpose(0, 1)
         video2 = torch.stack(video2).transpose(0, 1)
         return video1, video2, video_label
