@@ -90,17 +90,17 @@ class VideoFolder2(data.Dataset):
                 image1 = self.transform(image1_)
                 image2 = self.transform(image2_)
                 if self._landmark:
-                    lm1 = get_heatmap_from_image(image1_, self.fa)[0]
+                    lm1 = get_heatmap_from_image(image1_, self.fa)
                     if lm1 is None:
                         lm1 = torch.zeros([1, image1.size(1), image1.size(2)])
                     else:
-                        lm1 = upsample_image(lm1, (image1.size(1), image1.size(2)))
-                    lm2 = get_heatmap_from_image(image2_, self.fa)[0]
+                        lm1 = upsample_image(lm1[0], (image1.size(1), image1.size(2)))
+                    lm2 = get_heatmap_from_image(image2_, self.fa)
                     # print(lm2)
                     if lm2 is None:
                         lm2 = torch.zeros([1, image2.size(1), image2.size(2)])
                     else:
-                        lm2 = upsample_image(lm2, (image2.size(1), image2.size(2)))
+                        lm2 = upsample_image(lm2[0], (image2.size(1), image2.size(2)))
                     image1 = torch.cat((image1, lm1), dim=0)
                     image2 = torch.cat((image2, lm2), dim=0)
                 video1.append(image1)
