@@ -10,7 +10,7 @@ from face_alignment.utils import *
 from copy import deepcopy
 
 
-def get_heatmap_from_image(image_or_path, fa, detected_faces=None):
+def get_heatmap_from_image(image_or_path, fa, detected_faces=None, ret_pts=False):
     """Predict the landmarks for each face present in the image.
 
     This function predicts a set of 68 2D or 3D images, one for each image present.
@@ -43,10 +43,13 @@ def get_heatmap_from_image(image_or_path, fa, detected_faces=None):
 
     if len(detected_faces) == 0:
         print("Warning: No faces were detected.")
+        if ret_pts:
+            return None, None
         return None
 
     with torch.no_grad():
         heatmaps_all = []
+        points_all = []
         for i, d in enumerate(detected_faces):
             center = torch.FloatTensor(
                 [d[2] - (d[2] - d[0]) / 2.0, d[3] -
@@ -80,4 +83,7 @@ def get_heatmap_from_image(image_or_path, fa, detected_faces=None):
             heatmaps = torch.sum(heatmaps, dim=1)
             # heatmaps.requires_grad_(False)
             heatmaps_all.append(heatmaps)
+            points_all.append(pts_img)
+    if ret_pts:
+        return heatmaps_all, points_all
     return heatmaps_all
