@@ -14,8 +14,12 @@ def read_xy(filename):
 
 # src = '/dresden/users/lh599/Research/Jean/data_1/round1/videos_crop'
 # dst = '/dresden/users/lh599/Research/Jean/data_1/round1/videos_renamed'
-src = '/media/ligong/Picasso/Datasets/Jean/round1/videos_crop'
-dst = '/media/ligong/Picasso/Datasets/Jean/round1/videos_renamed'
+
+# src = '/media/ligong/Picasso/Datasets/Jean/round1/videos_crop'
+# dst = '/media/ligong/Picasso/Datasets/Jean/round1/feat_headpose_txt'
+
+src = '/media/ligong/Picasso/Share/cbimfs/Research/Jean/data_1/round1/videos_mp4'
+dst = '/media/ligong/Picasso/Datasets/Jean/round1/features/center'
 
 
 if not os.path.exists(dst):
@@ -24,7 +28,7 @@ if not os.path.exists(dst):
 dids = [os.path.basename(s) for s in glob.glob(os.path.join(src, 'Dyad*'))]
 
 for did in dids:
-    vidfiles = [os.path.basename(s) for s in glob.glob(os.path.join(src, did, '*.mp4'))]
+    vidfiles = [os.path.basename(s) for s in glob.glob(os.path.join(src, did, '*.txt'))]
     for filename in vidfiles:
         file_in = os.path.join(src, did, filename)
         newname = did+'_'+filename
